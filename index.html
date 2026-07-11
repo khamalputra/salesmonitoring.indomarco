@@ -675,6 +675,50 @@
       let supervisorRawLogs = [];
       let supervisorSalesList = [];
       let supervisorAvgCall = 0;
+      let supervisorActiveMonthIndex = new Date().getMonth();
+
+      /**
+       * Menghitung ambang batas persentase target penjualan proporsional (pro-rated)
+       * untuk bulan berjalan (dari tanggal 1 hingga hari ini).
+       */
+      function getExpectedSalesAchPct(activeMonthIndex) {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const currentMonth = today.getMonth();
+        
+        // Jika bulan lalu (historis), target akhir bulan tetap minimal 90%
+        if (activeMonthIndex < currentMonth) {
+          return 90;
+        }
+        // Jika bulan depan (future)
+        if (activeMonthIndex > currentMonth) {
+          return 0;
+        }
+        
+        // Bulan berjalan (activeMonthIndex === currentMonth)
+        // Hitung total hari kerja (Senin-Jumat) dari tanggal 1 s.d akhir bulan
+        const lastDay = new Date(currentYear, activeMonthIndex + 1, 0).getDate();
+        let totalWorkingDays = 0;
+        let elapsedWorkingDays = 0;
+        
+        for (let d = 1; d <= lastDay; d++) {
+          const date = new Date(currentYear, activeMonthIndex, d);
+          const day = date.getDay();
+          const isWeekday = (day >= 1 && day <= 5);
+          
+          if (isWeekday) {
+            totalWorkingDays++;
+            if (d <= today.getDate()) {
+              elapsedWorkingDays++;
+            }
+          }
+        }
+        
+        if (totalWorkingDays === 0) return 0;
+        // Hitung persentase target proporsional harian berjalan (dikali 90% sebagai ambang batas "High Sales" untuk kategori Star/Potensial)
+        const proRatedProgress = (elapsedWorkingDays / totalWorkingDays);
+        return Math.round(proRatedProgress * 90);
+      }
 
       // PWA Service Worker Registration & Auto-Update
       if ('serviceWorker' in navigator) {
@@ -1238,6 +1282,7 @@
         // Simpan data ke variabel global
         supervisorRawLogs = data.rawLogs || [];
         supervisorSalesList = data.salesList || [];
+        supervisorActiveMonthIndex = (data.activeMonthIndex !== undefined) ? data.activeMonthIndex : new Date().getMonth();
 
         // Kalkulasi Matriks & Insights Tim (Selalu berbasis akumulasi bulanan penuh)
         const activeSalesCount = data.salesList.length;
@@ -1308,7 +1353,8 @@
           } else {
             // Klasifikasi kuadran cerdas berbasis target penjualan & efisiensi kunjungan
             const isHighCall = salesman.totalCall >= (supervisorAvgCall * 0.8);
-            const isHighSales = salesman.achSalesPct >= 90;
+            const salesThreshold = getExpectedSalesAchPct(supervisorActiveMonthIndex);
+            const isHighSales = salesman.achSalesPct >= salesThreshold;
             
             if (isHighSales) {
               if (isHighConv) {
