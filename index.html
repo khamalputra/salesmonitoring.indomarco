@@ -1343,20 +1343,20 @@
           tr.innerHTML = `
             <td class="px-3 py-3.5 font-semibold text-gray-700">${salesman.nama}</td>
             <td class="px-3 py-3.5 text-gray-500">${salesman.spoint}</td>
-            <td class="px-3 py-3.5 text-right font-medium">${formatRupiah(salesman.target)}</td>
+            <td class="px-3 py-3.5 text-right font-medium whitespace-nowrap">${formatRupiah(salesman.target)}</td>
             <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalCall}</td>
             <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalEffCall}</td>
             <td class="px-3 py-3.5 text-center font-bold">${salesman.achCallPct}%</td>
             <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalSku}</td>
             <td class="px-3 py-3.5 text-center font-semibold text-gray-600">${salesman.achItem}</td>
-            <td class="px-3 py-3.5 text-right font-bold text-gray-700">${formatRupiah(salesman.salesMtd)}</td>
+            <td class="px-3 py-3.5 text-right font-bold text-gray-700 whitespace-nowrap">${formatRupiah(salesman.salesMtd)}</td>
             <td class="px-3 py-3.5 text-center">
               <span class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${progressBadge}">${salesman.achSalesPct}%</span>
             </td>
             <td class="px-3 py-3.5 text-center">
               <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${categoryBadgeClass}">${categoryLabel}</span>
             </td>
-            <td class="px-3 py-3.5 text-right font-bold text-indomarcoRed">${formatRupiah(salesman.kekurangan)}</td>
+            <td class="px-3 py-3.5 text-right font-bold text-indomarcoRed whitespace-nowrap">${formatRupiah(salesman.kekurangan)}</td>
           `;
           tbody.appendChild(tr);
 
