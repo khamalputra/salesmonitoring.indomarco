@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8">
+    <title>Indomarco Sales Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0000B3">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              heading: ['Outfit', 'sans-serif'],
+              jakarta: ['"Plus Jakarta Sans"', 'sans-serif'],
+            },
+            colors: {
+              indomarcoBlue: '#0000B3',
+              indomarcoBlueDark: '#000080',
+              indomarcoRed: '#E6005C',
+              indomarcoRedDark: '#B30047',
+            }
+          }
+        }
+      }
+    </script>
+    
+    <style>
+      /* Micro-animations and Premium Styling */
+      .glassmorphism {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.25);
+      }
+      
+      .glassmorphism-dark {
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+
+      /* Shimmer Effect for Skeletal Loader */
+      @keyframes shimmer {
+        0% {
+          background-position: -200% 0;
+        }
+        100% {
+          background-position: 200% 0;
+        }
+      }
+      .shimmer {
+        background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+      }
+      
+      /* Smooth tab transition */
+      .page-transition {
+        transition: opacity 0.25s ease-in-out, transform 0.25s ease-in-out;
+      }
+
+      /* Hide scrollbar for Chrome, Safari and Opera */
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      /* Hide scrollbar for IE, Edge and Firefox */
+      .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+      }
+
+      /* Print Styles */
+      @media print {
+        body {
+          background-color: #ffffff !important;
+          color: #000000 !important;
+        }
+        .no-print {
+          display: none !important;
+        }
+        header, footer, nav, #settingsModal {
+          display: none !important;
+        }
+        main {
+          padding: 0 !important;
+          margin: 0 !important;
+          max-width: 100% !important;
+          width: 100% !important;
+        }
+        .max-w-7xl {
+          max-width: 100% !important;
+        }
+        .grid {
+          display: grid !important;
+        }
+        .lg\:grid-cols-3 {
+          grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+        .lg\:col-span-2 {
+          grid-column: span 1 / span 1 !important;
+        }
+        .md\:grid-cols-3 {
+          grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        .grid-cols-1 {
+          grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+        }
+        .bg-white, tr {
+          page-break-inside: avoid !important;
+        }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-[#F9FAFB] text-gray-800 font-sans antialiased min-h-screen flex flex-col selection:bg-indomarcoRed selection:text-white">
+
+    <!-- ================= GLOBALS / LOADERS ================= -->
+    <!-- Skeletal Loading Overlay -->
+    <div id="skeletalOverlay" class="fixed inset-0 bg-[#F9FAFB] z-50 flex flex-col justify-between hidden transition-opacity duration-300">
+      <!-- Navbar Skeleton -->
+      <div class="h-16 bg-white border-b border-gray-200 flex justify-between items-center px-6">
+        <div class="h-6 w-32 shimmer rounded"></div>
+        <div class="flex items-center space-x-3">
+          <div class="h-8 w-36 shimmer rounded-lg"></div>
+          <div class="h-8 w-16 shimmer rounded-lg"></div>
+        </div>
+      </div>
+      <!-- Body Skeleton -->
+      <div class="flex-grow p-6 max-w-7xl w-full mx-auto space-y-6">
+        <div class="h-8 w-48 shimmer rounded"></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="h-28 bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+            <div class="h-4 w-24 shimmer rounded"></div>
+            <div class="h-8 w-36 shimmer rounded"></div>
+          </div>
+          <div class="h-28 bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+            <div class="h-4 w-32 shimmer rounded"></div>
+            <div class="h-8 w-40 shimmer rounded"></div>
+          </div>
+          <div class="h-28 bg-white rounded-2xl border border-gray-200 p-5 space-y-3">
+            <div class="h-4 w-28 shimmer rounded"></div>
+            <div class="h-8 w-32 shimmer rounded"></div>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div class="lg:col-span-2 h-96 bg-white rounded-2xl border border-gray-200 shimmer"></div>
+          <div class="h-96 bg-white rounded-2xl border border-gray-200 shimmer"></div>
+        </div>
+      </div>
+      <!-- Footer Skeleton -->
+      <div class="h-12 bg-gray-800 flex items-center justify-center">
+        <div class="h-4 w-48 shimmer rounded opacity-30"></div>
+      </div>
+    </div>
+
+    <!-- API URL Configuration Modal (For Easy Setup) -->
+    <div id="settingsModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl p-6 border border-gray-100 transform scale-95 transition-transform">
+        <h3 class="font-heading font-bold text-lg text-indomarcoBlue mb-3">Pengaturan API Endpoint</h3>
+        <p class="text-xs text-gray-500 mb-4">Masukkan URL Web App dari Google Apps Script yang sudah Anda deploy.</p>
+        <div class="space-y-4">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-600 uppercase mb-1">URL Apps Script API</label>
+            <input type="text" id="apiEndpointInput" class="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-indomarcoBlue" placeholder="https://script.google.com/macros/s/.../exec">
+          </div>
+          <div class="flex space-x-3 justify-end text-xs font-semibold">
+            <button onclick="toggleSettingsModal(false)" class="px-4 py-2 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition">Batal</button>
+            <button onclick="saveApiEndpoint()" class="px-4 py-2 bg-indomarcoBlue text-white rounded-xl hover:bg-blue-900 transition shadow">Simpan</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden backdrop-blur-sm">
+      <div class="bg-white rounded-3xl max-w-md w-full shadow-2xl p-6 border border-gray-100 transform scale-95 transition-all duration-300">
+        <div class="flex items-center space-x-3 text-indomarcoRed mb-4">
+          <div class="p-2 bg-pink-50 rounded-xl">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h3 class="font-heading font-bold text-lg text-gray-800" id="confirmModalTitle">Konfirmasi Penurunan MTD</h3>
+        </div>
+        <p id="confirmModalText" class="text-xs text-gray-600 leading-relaxed mb-6"></p>
+        <div class="flex space-x-3 justify-end text-xs font-semibold">
+          <button id="btnConfirmCancel" class="px-4 py-2.5 bg-gray-100 text-gray-600 rounded-xl hover:bg-gray-200 transition">Batal</button>
+          <button id="btnConfirmOk" class="px-4 py-2.5 bg-indomarcoRed text-white rounded-xl hover:bg-indomarcoRedDark transition shadow-md">Ya, Kirim Data</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= LOGIN PAGE ================= -->
+    <div id="loginPage" class="min-h-screen flex flex-col justify-between px-4 py-6 bg-gradient-to-br from-slate-50 via-white to-slate-100 text-gray-700">
+      <div class="flex justify-end">
+        <!-- Settings Gear Button -->
+        <button onclick="toggleSettingsModal(true)" class="p-2 text-gray-500 hover:text-gray-800 bg-gray-100 hover:bg-gray-200 border border-gray-200/80 rounded-full transition-all shadow-sm" title="Configure API Endpoint">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 animate-[spin_8s_linear_infinite]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="flex items-center justify-center flex-grow">
+        <div class="w-full max-w-md p-8 rounded-3xl bg-white border border-gray-100 shadow-2xl relative overflow-hidden">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-pink-100/50 rounded-full filter blur-xl"></div>
+          <div class="absolute -bottom-12 -left-12 w-32 h-32 bg-indigo-100/50 rounded-full filter blur-xl"></div>
+          
+          <div class="text-center mb-8 flex flex-col items-center">
+            <!-- Official SVG Indomarco Logo -->
+            <svg class="h-14 w-auto mb-2 drop-shadow-md" viewBox="0 0 320 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 25 Q160 12 308 25 L308 65 Q160 78 12 65 Z" stroke="#E6005C" stroke-width="4.5" fill="#FFFFFF" />
+              <text x="65" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">IND</text>
+              <circle cx="138" cy="46" r="13" stroke="#E6005C" stroke-width="3" fill="none" />
+              <circle cx="138" cy="46" r="8" stroke="#E6005C" stroke-width="2.2" fill="none" />
+              <circle cx="138" cy="46" r="3.5" stroke="#E6005C" stroke-width="2.5" fill="#E6005C" />
+              <text x="158" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">MARCO</text>
+            </svg>
+            <p class="font-jakarta font-semibold text-[10px] sm:text-[11px] text-slate-500 tracking-wide mt-2">Sistem Monitoring Aktivitas & Realisasi Sales</p>
+          </div>
+
+          <div id="errorMessage" class="hidden bg-red-50 border-l-4 border-indomarcoRed text-indomarcoRed p-3.5 rounded-xl text-xs mb-5 font-semibold transition-all"></div>
+
+          <form id="loginForm" onsubmit="executeLogin(event)" class="space-y-5">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Username/email</label>
+              <div class="relative">
+                <input type="text" id="username" required class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all focus:bg-white" placeholder="Masukkan email terdaftar">
+              </div>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Password</label>
+              <div class="relative">
+                <input type="password" id="password" required class="w-full bg-slate-50 border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all focus:bg-white" placeholder="••••••••">
+              </div>
+            </div>
+            <button type="submit" id="loginBtn" class="w-full bg-indomarcoRed hover:bg-indomarcoRedDark text-white font-bold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] active:scale-[0.99] transition-all uppercase tracking-wider text-xs font-heading">
+              Masuk ke Dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <div class="text-center text-gray-400 text-[10px] tracking-wide">
+        &copy; 2026 PT Indomarco Adi Prima. All Rights Reserved.
+      </div>
+    </div>
+
+    <!-- ================= MAIN WEB APP PANEL ================= -->
+    <div id="appContainer" class="hidden flex-grow flex flex-col min-h-screen">
+      <!-- Top Navigation Header -->
+      <header class="bg-white border-b border-gray-200 shadow-sm px-4 md:px-6 py-3 flex justify-between items-center sticky top-0 z-40 no-print">
+        <div class="flex items-center space-x-3">
+          <!-- Official SVG Indomarco Logo -->
+          <svg class="h-10 w-auto" viewBox="0 0 320 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 25 Q160 12 308 25 L308 65 Q160 78 12 65 Z" stroke="#E6005C" stroke-width="4.5" fill="#FFFFFF" />
+            <text x="65" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">IND</text>
+            <circle cx="138" cy="46" r="13" stroke="#E6005C" stroke-width="3" fill="none" />
+            <circle cx="138" cy="46" r="8" stroke="#E6005C" stroke-width="2.2" fill="none" />
+            <circle cx="138" cy="46" r="3.5" stroke="#E6005C" stroke-width="2.5" fill="#E6005C" />
+            <text x="158" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">MARCO</text>
+          </svg>
+        </div>
+        <div class="flex items-center space-x-3">
+          <!-- User info badge -->
+          <span id="userBadge" class="hidden md:inline-flex items-center text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-xl font-bold"></span>
+          <button onclick="executeLogout()" class="text-xs bg-gray-100 hover:bg-red-50 hover:text-indomarcoRed text-gray-700 px-3.5 py-2 rounded-xl font-extrabold transition-all border border-gray-200/50 hover:border-red-200/50 flex items-center space-x-1.5 shadow-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>LOGOUT</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Main Dashboard Grid Layout -->
+      <main class="flex-grow p-4 md:p-6 max-w-7xl w-full mx-auto pb-12 md:pb-6">
+        
+        <!-- SISI SALES: Form Input -->
+        <!-- SISI SALES: Form Input & Analytics -->
+        <div id="salesSection" class="hidden page-transition">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <!-- Column 1 & 2: Personal Analytics (2/3 width on desktop) -->
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Welcome & Progress Banner -->
+              <div class="bg-gradient-to-r from-indomarcoBlue to-indigo-900 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
+                <div class="absolute -right-8 -bottom-8 w-24 h-24 bg-white/10 rounded-full filter blur-md"></div>
+                <div class="flex justify-between items-start">
+                  <div>
+                    <p class="text-xs text-white/70 font-semibold uppercase tracking-wider" id="salesSpointLabel"></p>
+                    <h2 class="text-2xl font-heading font-black mt-0.5" id="salesWelcomeName">Halo, Salesman</h2>
+                  </div>
+                  <span class="text-[9px] bg-green-400 text-slate-900 px-2 py-1 rounded-md font-bold uppercase tracking-wide">AKTIF</span>
+                </div>
+                
+                <!-- Target Progress Bar -->
+                <div class="mt-6 space-y-2">
+                  <div class="flex justify-between text-xs font-semibold">
+                    <span>Progres Target Bulan Ini</span>
+                    <span id="salesProgressPercent">0%</span>
+                  </div>
+                  <div class="w-full bg-white/20 h-3 rounded-full overflow-hidden">
+                    <div id="salesProgressBar" class="h-full bg-green-400 transition-all duration-500" style="width: 0%"></div>
+                  </div>
+                  <div class="flex justify-between text-[10px] text-white/70">
+                    <span id="salesCurrentMtdLabel">Realisasi: Rp 0</span>
+                    <span id="salesTargetLabel">Target: Rp 0</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Personal Activity & Productivity Scorecard -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
+                  <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total Kunjungan</span>
+                  <p id="salesPersonalCall" class="text-2xl font-heading font-black text-indomarcoBlue mt-0.5">0</p>
+                  <p class="text-[9px] text-gray-400 mt-1">Call bulan berjalan</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
+                  <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Efektivitas Kunjungan</span>
+                  <p id="salesPersonalEff" class="text-2xl font-heading font-black text-green-600 mt-0.5">0%</p>
+                  <p class="text-[9px] text-gray-400 mt-1">Conversion rate</p>
+                </div>
+                <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm">
+                  <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Kepadatan SKU (Density)</span>
+                  <p id="salesPersonalSku" class="text-2xl font-heading font-black text-purple-600 mt-0.5">0.0</p>
+                  <p class="text-[9px] text-gray-400 mt-1">Avg SKU terjual / kunjungan efektif</p>
+                </div>
+              </div>
+              
+              <!-- Target Run-Rate Calculator & Advice Card -->
+              <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-sm grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Run-Rate -->
+                <div class="border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-6 flex flex-col justify-between">
+                  <div>
+                    <h4 class="text-xs font-heading font-bold text-indomarcoBlue uppercase tracking-wider mb-2">Target Harian (Run-Rate)</h4>
+                    <p id="salesRunRateValue" class="text-xl font-heading font-black text-indomarcoRed">Rp 0</p>
+                    <p class="text-[9px] text-gray-400 mt-1 leading-relaxed">Nominal yang harus dicapai per hari kerja untuk sisa bulan ini agar target tercapai 100%.</p>
+                  </div>
+                  <div class="mt-4 pt-3 border-t border-gray-100/60 text-[10px] text-gray-500 font-semibold" id="salesWorkingDaysLeftLabel">
+                    Sisa hari kerja: 0 hari
+                  </div>
+                </div>
+                
+                <!-- Automated Evaluator -->
+                <div class="flex flex-col justify-between">
+                  <div>
+                    <h4 class="text-xs font-heading font-bold text-indomarcoBlue uppercase tracking-wider mb-2">Evaluasi Kinerja Pribadi</h4>
+                    <p id="salesPersonalAdvice" class="text-xs text-gray-600 leading-relaxed italic">Menganalisis data kinerja...</p>
+                  </div>
+                  <div class="mt-4 text-[9px] text-gray-400 font-bold uppercase tracking-wider flex items-center">
+                    <span class="w-2 h-2 bg-indigo-500 rounded-full mr-1.5"></span> Rekomendasi Sistem
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Column 3: Form Input (1/3 width on desktop) -->
+            <div class="space-y-6">
+              <div class="bg-white rounded-2xl border border-gray-200 shadow-xl p-6">
+                <div class="border-b border-gray-100 pb-3.5 mb-5 flex justify-between items-center">
+                  <div>
+                    <h3 class="text-base font-heading font-bold text-indomarcoBlue">Lapor Penjualan</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Input aktivitas hari ini.</p>
+                  </div>
+                  <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indomarcoRed opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-indomarcoRed"></span>
+                  </span>
+                </div>
+
+                <div id="formAlert" class="hidden p-3.5 rounded-xl text-xs font-semibold mb-4 transition-all"></div>
+
+                <form id="dailyForm" onsubmit="submitFormSales(event)" class="space-y-4">
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Tanggal Laporan</label>
+                    <select id="formDateType" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all bg-white font-semibold">
+                      <option value="today">Hari Ini (H)</option>
+                      <option value="yesterday">Kemarin (H-1)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Total Call Hari Ini (Kunjungan)</label>
+                    <input type="number" id="formCall" required min="1" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 35">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Effective Call Hari Ini</label>
+                    <input type="number" id="formEffCall" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 20">
+                  </div>
+                  <div>
+                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">SKU Item Terjual Hari Ini</label>
+                    <input type="number" id="formSku" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 150">
+                  </div>
+                  
+                  <div class="bg-pink-50/50 border border-pink-100/80 p-4 rounded-2xl">
+                    <label class="block text-xs font-bold text-indomarcoRed mb-1">Nilai Sales MTD Terbaru (Rupiah)</label>
+                    <p class="text-[9px] text-gray-500 mb-2 leading-relaxed">⚠️ Masukkan total akumulasi MTD berjalan Anda sampai dengan hari ini dari laporan email resmi.</p>
+                    <input type="number" id="formSalesMtd" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-pink-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all font-semibold bg-white" placeholder="Contoh: 820000000">
+                  </div>
+                  
+                  <button type="submit" class="w-full bg-indomarcoRed hover:bg-indomarcoRedDark text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all uppercase tracking-wider text-xs font-heading">
+                    Kirim Laporan MTD
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SISI SUPERVISOR: Monitoring Dashboard -->
+        <div id="supervisorSection" class="hidden page-transition space-y-6">
+          <!-- Kop Surat Laporan Cetak PDF (Hanya Muncul saat Print) -->
+          <div class="hidden print:flex items-center justify-between border-b-2 border-indomarcoBlue pb-4 mb-6">
+            <div class="flex items-center space-x-4">
+              <!-- Official SVG Indomarco Logo -->
+              <svg class="h-12 w-auto" viewBox="0 0 320 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 25 Q160 12 308 25 L308 65 Q160 78 12 65 Z" stroke="#E6005C" stroke-width="4.5" fill="#FFFFFF" />
+                <text x="65" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">IND</text>
+                <circle cx="138" cy="46" r="13" stroke="#E6005C" stroke-width="3" fill="none" />
+                <circle cx="138" cy="46" r="8" stroke="#E6005C" stroke-width="2.2" fill="none" />
+                <circle cx="138" cy="46" r="3.5" stroke="#E6005C" stroke-width="2.5" fill="#E6005C" />
+                <text x="158" y="55" font-family="'Outfit', 'Inter', sans-serif" font-weight="900" font-size="27" fill="#0000B3" letter-spacing="1">MARCO</text>
+              </svg>
+              <div>
+                <h1 class="text-sm font-heading font-black text-indomarcoBlue tracking-wide">PT INDOMARCO ADI PRIMA</h1>
+                <p class="text-[9px] text-gray-500 uppercase tracking-wider font-bold">Sistem Monitoring Aktivitas & Realisasi Sales</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <h2 class="text-xs font-bold text-slate-700 uppercase" id="printReportTitle">LAPORAN KINERJA BULANAN</h2>
+              <p class="text-[9px] text-slate-500 font-semibold" id="printDateBadge">Dicetak: -</p>
+            </div>
+          </div>
+
+          <!-- Page title block -->
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+              <h2 class="text-2xl font-heading font-black text-indomarcoBlue leading-tight flex items-center">
+                DASHBOARD SUPERVISOR
+                <select id="filterBulan" onchange="changeFilterBulan()" class="ml-3 text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1.5 rounded-xl font-bold tracking-wide border border-indigo-100 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue transition-all cursor-pointer no-print">
+                  <!-- Opsi diisi secara dinamis oleh JS -->
+                </select>
+                <span id="printMonthBadge" class="hidden print:inline-block ml-2.5 text-xs bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-bold tracking-wide uppercase border border-indigo-100">Bulan: ...</span>
+              </h2>
+              <p class="text-xs text-gray-500 mt-1">Sistem analisis performa tim sales berbasis MTD real-time.</p>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button onclick="triggerPdfExport()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition duration-200 flex items-center space-x-1.5 no-print">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span>Cetak PDF</span>
+              </button>
+              <button onclick="loadSupervisorDashboard()" class="bg-indomarcoBlue hover:bg-blue-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow transition duration-200 flex items-center space-x-1.5 no-print">
+                <svg id="refreshIcon" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <span>Refresh Data</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Insights Tim -->
+          <div id="supervisorQuickInsights" class="grid grid-cols-1 sm:grid-cols-3 gap-4 bg-white border border-gray-200/80 p-4 rounded-2xl shadow-sm">
+            <div class="flex items-center space-x-3 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0 sm:pr-4">
+              <span class="p-2.5 bg-green-50 text-green-600 rounded-xl text-sm">⭐</span>
+              <div>
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Top Performer</p>
+                <p id="spvTopPerformer" class="text-xs font-bold text-gray-700">-</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3 border-b sm:border-b-0 sm:border-r border-gray-100 pb-3 sm:pb-0 sm:pr-4">
+              <span class="p-2.5 bg-pink-50 text-indomarcoRed rounded-xl text-sm">📢</span>
+              <div>
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Butuh Pembinaan</p>
+                <p id="spvNeedCoaching" class="text-xs font-bold text-gray-700">-</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-3">
+              <span class="p-2.5 bg-indigo-50 text-indomarcoBlue rounded-xl text-sm">📊</span>
+              <div>
+                <p class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Rata-rata Kunjungan</p>
+                <p id="spvAvgCall" class="text-xs font-bold text-gray-700">-</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cards Summary Row -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Target Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80 flex items-center justify-between">
+              <div>
+                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Target Wilayah</span>
+                <p id="sumTarget" class="text-xl font-heading font-black text-indomarcoBlue mt-0.5">Rp 0</p>
+              </div>
+              <div class="p-3 bg-indigo-50 text-indomarcoBlue rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+            </div>
+            <!-- Achievement Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80 flex items-center justify-between">
+              <div>
+                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Total Sales MTD</span>
+                <p id="sumSales" class="text-xl font-heading font-black text-green-600 mt-0.5">Rp 0</p>
+              </div>
+              <div class="p-3 bg-green-50 text-green-600 rounded-xl flex flex-col items-center">
+                <span id="sumAchPercent" class="text-sm font-black">0%</span>
+              </div>
+            </div>
+            <!-- Deficit Card -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-200/80 flex items-center justify-between">
+              <div>
+                <span class="text-[9px] text-gray-400 font-bold uppercase tracking-wider">Sisa Kekurangan</span>
+                <p id="sumKekurangan" class="text-xl font-heading font-black text-indomarcoRed mt-0.5">Rp 0</p>
+              </div>
+              <div class="p-3 bg-pink-50 text-indomarcoRed rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Supervisor Grid Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            <!-- Table Performance Container -->
+            <div class="lg:col-span-2 bg-white rounded-2xl border border-gray-200/80 shadow-sm overflow-hidden flex flex-col justify-between">
+              <div>
+                <!-- Panel Header -->
+                <div class="bg-white px-5 py-4 border-b border-gray-100 flex justify-between items-center">
+                  <h3 class="text-xs font-heading font-bold text-indomarcoBlue uppercase tracking-wider">Kinerja Anggota Tim (Bulan Berjalan)</h3>
+                  <span class="text-[9px] text-gray-400 font-semibold">*Diurutkan berdasarkan ACH %</span>
+                </div>
+                
+                <!-- Filter Rentang Tanggal Kustom (no-print) -->
+                <div class="bg-slate-50/50 px-5 py-3 border-b border-gray-100 flex flex-wrap items-center justify-between gap-3 text-[11px] no-print">
+                  <div class="flex items-center space-x-2">
+                    <span class="font-bold text-gray-500 uppercase tracking-wide text-[9px]">Filter Rentang Tanggal:</span>
+                    <input type="date" id="filterStartDate" onchange="applyDateRangeFilter()" class="border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indomarcoBlue text-xs transition-all bg-white font-medium">
+                    <span class="text-gray-400 font-bold">s/d</span>
+                    <input type="date" id="filterEndDate" onchange="applyDateRangeFilter()" class="border border-gray-200 rounded-lg px-2 py-1 focus:outline-none focus:ring-1 focus:ring-indomarcoBlue text-xs transition-all bg-white font-medium">
+                  </div>
+                  <button onclick="resetDateRangeFilter()" class="text-xs font-extrabold text-indomarcoRed hover:text-indomarcoRedDark transition flex items-center space-x-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span>RESET</span>
+                  </button>
+                </div>
+                
+                <!-- Desktop View (Tabel Lebar) - Hidden on Mobile -->
+                <div class="hidden md:block overflow-x-auto">
+                  <table class="min-w-full text-xs">
+                    <thead class="bg-gray-50 border-b border-gray-100 text-gray-400 font-bold uppercase text-[9px] tracking-wider">
+                      <tr>
+                        <th class="px-3 py-3.5 text-left">Nama Sales</th>
+                        <th class="px-3 py-3.5 text-left">SPOINT</th>
+                        <th class="px-3 py-3.5 text-right">Target</th>
+                        <th class="px-3 py-3.5 text-center">Call</th>
+                        <th class="px-3 py-3.5 text-center">Eff Call</th>
+                        <th class="px-3 py-3.5 text-center">Ach Call %</th>
+                        <th class="px-3 py-3.5 text-center">SKU Item</th>
+                        <th class="px-3 py-3.5 text-center">Ach Item</th>
+                        <th class="px-3 py-3.5 text-right">Sales MTD</th>
+                        <th class="px-3 py-3.5 text-center">Pencapaian %</th>
+                        <th class="px-3 py-3.5 text-center">Kategori</th>
+                        <th class="px-3 py-3.5 text-right">Kekurangan</th>
+                      </tr>
+                    </thead>
+                    <tbody id="salesTableBody" class="divide-y divide-gray-100">
+                      <!-- Diisi secara dinamis -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Mobile View (Card List Accordion) - Hidden on Desktop -->
+                <div class="md:hidden divide-y divide-gray-100" id="salesMobileContainer">
+                  <!-- Diisi secara dinamis -->
+                </div>
+              </div>
+              
+              <!-- Bottom territory summary for visit stats -->
+              <div class="bg-gray-50 border-t border-gray-100 px-5 py-3 flex justify-between text-[10px] text-gray-500 font-semibold">
+                <span id="territoryTotalVisitBadge">Total Call Wilayah: 0 | Eff Call: 0 (0%)</span>
+              </div>
+            </div>
+
+            <!-- Visualization / Charts Panel -->
+            <div class="space-y-6">
+              <!-- Radial Progress Gauge (Overall territory Target) -->
+              <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5 flex flex-col items-center">
+                <h3 class="text-xs font-heading font-bold text-indomarcoBlue border-b border-gray-100 pb-2 mb-4 w-full uppercase tracking-wider">Pencapaian Wilayah</h3>
+                <div class="relative w-40 h-40 flex items-center justify-center">
+                  <canvas id="territoryGaugeChart"></canvas>
+                  <!-- Value inside circular chart -->
+                  <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="radialPercentLabel" class="text-2xl font-heading font-black text-indomarcoBlue">0%</span>
+                    <span class="text-[8px] text-gray-400 font-bold uppercase tracking-wider">Dari Target</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bar Chart Comparison (Sales vs Target) -->
+              <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+                <h3 class="text-xs font-heading font-bold text-indomarcoBlue border-b border-gray-100 pb-2 mb-4 uppercase tracking-wider">Komparasi Sales MTD vs Target</h3>
+                <div class="relative w-full h-56">
+                  <canvas id="barChartComparison"></canvas>
+                </div>
+                
+                <!-- Notice/Notes block -->
+                <div class="mt-4 bg-red-50/50 border border-red-100/60 p-3.5 rounded-xl text-[10px] text-gray-600 leading-relaxed">
+                  <div class="flex items-center space-x-1 mb-1 font-bold text-indomarcoRed">
+                    <span>💡 Catatan Pembinaan Supervisor</span>
+                  </div>
+                  Salesman dengan persentase <strong class="text-indomarcoRed">ACH% di bawah 90%</strong> (warna merah) wajib mendapat bimbingan intensif dan evaluasi rute kunjungan.
+                </div>
+              </div>
+
+              <!-- Activity Leaderboard Chart -->
+              <div class="bg-white rounded-2xl border border-gray-200/80 shadow-sm p-5">
+                <h3 class="text-xs font-heading font-bold text-indomarcoBlue border-b border-gray-100 pb-2 mb-4 uppercase tracking-wider">Leaderboard Efektivitas Kunjungan (Ach Call %)</h3>
+                <div class="relative w-full h-56">
+                  <canvas id="activityLeaderboardChart"></canvas>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Bottom Navigation Bar deleted (roles are fully separated to their respective screens) -->
+
+      <!-- Footer (Desktop) -->
+      <footer class="bg-gray-800 text-white/50 text-center py-4 text-xs mt-auto hidden md:block border-t border-gray-700">
+        <p>&copy; 2026 PT Indomarco Adi Prima. All Rights Reserved.</p>
+      </footer>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC CLIENT-SIDE ================= -->
+    <script>
+      // Load API URL safely from localStorage (prevents crash on restricted environments like iframe/file://)
+      let API_URL = "https://script.google.com/macros/s/AKfycbysmMV66NMUS11yPSCdcIrQruG4viljZ8VmMf8CpfOV6f48c7AkQfZ4wIP-LbVuEoEu/exec";
+      try {
+        const savedUrl = localStorage.getItem('indomarco_api_url');
+        if (savedUrl) {
+          API_URL = savedUrl;
+        }
+      } catch (e) {
+        console.warn("localStorage tidak dapat diakses, menggunakan default URL:", e);
+      }
+      
+      let currentUser = null;
+      let chartBar = null;
+      let chartGauge = null;
+      let chartActivity = null;
+      let currentActiveTab = "salesSection";
+      
+      // Global variables untuk filter tanggal client-side
+      let supervisorRawLogs = [];
+      let supervisorSalesList = [];
+      let supervisorAvgCall = 0;
+
+      // PWA Service Worker Registration
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker registered successfully!', reg))
+            .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+      }
+
+      // Check URL config status and display configuration modal if missing
+      window.addEventListener('DOMContentLoaded', async () => {
+        if (!API_URL) {
+          toggleSettingsModal(true);
+        }
+        
+        // Cek sesi login yang tersimpan
+        try {
+          const savedSession = localStorage.getItem('indomarco_session');
+          if (savedSession) {
+            currentUser = JSON.parse(savedSession);
+            
+            // Tampilkan overlay terlebih dahulu agar layout kosong tidak bocor ke mata user
+            toggleOverlay(true);
+            
+            showAppLayout();
+            
+            // Refresh data terbaru dari server di latar belakang secara asinkron (sunyi)
+            if (currentUser.role === 'supervisor') {
+              loadSupervisorDashboard();
+            } else {
+              // Untuk sales, matikan overlay dan lakukan refresh secara sunyi karena data lokal sudah ada
+              toggleOverlay(false);
+              refreshSalesDataSilent();
+            }
+          }
+        } catch (e) {
+          console.warn("Gagal memuat sesi otomatis:", e);
+          toggleOverlay(false);
+        }
+      });
+
+      async function refreshSalesDataSilent() {
+        if (!currentUser) return;
+        try {
+          const res = await callApi("login");
+          if (res.success) {
+            currentUser.currentMtd = res.currentMtd || 0;
+            currentUser.target = res.target || 0;
+            currentUser.totalCall = res.totalCall || 0;
+            currentUser.totalEffCall = res.totalEffCall || 0;
+            currentUser.totalSku = res.totalSku || 0;
+            currentUser.workingDaysLeft = res.workingDaysLeft || 1;
+            
+            localStorage.setItem('indomarco_session', JSON.stringify(currentUser));
+            
+            if (currentActiveTab === "salesSection") {
+              setupSalesForm();
+            }
+          } else {
+            // Sesi sudah tidak valid (misal user didelete dari db), force logout
+            executeLogout();
+          }
+        } catch (err) {
+          console.warn("Gagal sinkronisasi data sales di latar belakang:", err);
+        }
+      }
+
+      function toggleSettingsModal(show) {
+        const modal = document.getElementById('settingsModal');
+        const input = document.getElementById('apiEndpointInput');
+        if (show) {
+          input.value = API_URL;
+          modal.classList.remove('hidden');
+        } else {
+          modal.classList.add('hidden');
+        }
+      }
+
+      function showCustomAlert(title, message) {
+        return new Promise((resolve) => {
+          const modal = document.getElementById('confirmModal');
+          const titleEl = document.getElementById('confirmModalTitle');
+          const text = document.getElementById('confirmModalText');
+          const btnCancel = document.getElementById('btnConfirmCancel');
+          const btnOk = document.getElementById('btnConfirmOk');
+          
+          if (titleEl) titleEl.innerText = title;
+          text.innerText = message;
+          
+          // Sembunyikan tombol batal (Cancel) dan ubah tombol OK menjadi "Mengerti"
+          btnCancel.classList.add('hidden');
+          btnOk.innerText = "Mengerti";
+          btnOk.className = "px-5 py-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl transition shadow-md";
+          
+          modal.classList.remove('hidden');
+          
+          const closeModal = () => {
+            modal.classList.add('hidden');
+            btnOk.onclick = null;
+            
+            // Kembalikan ke kondisi semula agar tidak merusak modal confirm jika dibutuhkan di tempat lain
+            btnCancel.classList.remove('hidden');
+            btnOk.innerText = "Ya, Kirim Data";
+            btnOk.className = "px-4 py-2.5 bg-indomarcoRed text-white rounded-xl hover:bg-indomarcoRedDark transition shadow-md";
+            if (titleEl) titleEl.innerText = "Konfirmasi Penurunan MTD";
+            resolve();
+          };
+          
+          btnOk.onclick = closeModal;
+        });
+      }
+
+      function saveApiEndpoint() {
+        const input = document.getElementById('apiEndpointInput').value.trim();
+        if (!input) {
+          alert("Masukkan URL API dengan benar.");
+          return;
+        }
+        API_URL = input;
+        try {
+          localStorage.setItem('indomarco_api_url', input);
+        } catch (e) {
+          console.warn("Gagal menyimpan ke localStorage:", e);
+        }
+        toggleSettingsModal(false);
+        alert("API Endpoint berhasil disimpan!");
+      }
+
+      // API Call Wrapper (With CORS support)
+      async function callApi(action, data = {}) {
+        if (!API_URL) {
+          toggleSettingsModal(true);
+          throw new Error("API URL belum dikonfigurasi.");
+        }
+        
+        const payload = {
+          action: action,
+          username: currentUser ? currentUser.username : document.getElementById('username').value,
+          password: currentUser ? currentUser.password : document.getElementById('password').value,
+          ...data
+        };
+        
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: {
+            'Content-Type': 'text/plain;charset=utf-8' // Menghindari pre-flight check CORS di GAS
+          },
+          body: JSON.stringify(payload)
+        });
+        
+        if (!response.ok) {
+          throw new Error("Respons server bermasalah.");
+        }
+        
+        return await response.json();
+      }
+
+      function toggleOverlay(show) {
+        const overlay = document.getElementById('skeletalOverlay');
+        if (show) {
+          overlay.classList.remove('hidden');
+        } else {
+          overlay.classList.add('hidden');
+        }
+      }
+
+      async function executeLogin(event) {
+        event.preventDefault();
+        toggleOverlay(true);
+        
+        const errMsg = document.getElementById('errorMessage');
+        errMsg.classList.add('hidden');
+        
+        try {
+          const res = await callApi("login");
+          
+          if (res.success) {
+            currentUser = {
+              username: res.username,
+              password: document.getElementById('password').value, // Simpan kredensial untuk sesi API
+              nama: res.nama,
+              role: res.role,
+              spoint: res.spoint,
+              currentMtd: res.currentMtd || 0,
+              target: res.target || 0,
+              totalCall: res.totalCall || 0,
+              totalEffCall: res.totalEffCall || 0,
+              totalSku: res.totalSku || 0,
+              workingDaysLeft: res.workingDaysLeft || 1
+            };
+            
+            try {
+              localStorage.setItem('indomarco_session', JSON.stringify(currentUser));
+            } catch (e) {
+              console.warn("Gagal menyimpan sesi login:", e);
+            }
+            
+            // Hanya matikan overlay di sini jika user adalah sales biasa.
+            // Jika supervisor, biarkan overlay tetap aktif hingga data dashboard selesai diload di loadSupervisorDashboard()
+            if (currentUser.role !== 'supervisor') {
+              toggleOverlay(false);
+            }
+            
+            showAppLayout();
+          } else {
+            toggleOverlay(false);
+            errMsg.innerText = res.message;
+            errMsg.classList.remove('hidden');
+          }
+        } catch (err) {
+          toggleOverlay(false);
+          errMsg.innerText = "Koneksi ke backend Apps Script gagal. Periksa kembali URL API Anda.";
+          errMsg.classList.remove('hidden');
+        }
+      }
+
+      function showAppLayout() {
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('appContainer').classList.remove('hidden');
+        document.getElementById('userBadge').innerText = currentUser.nama + " (" + currentUser.role.toUpperCase() + ")";
+
+        if (currentUser.role === 'supervisor') {
+          switchTab('supervisorSection');
+        } else {
+          switchTab('salesSection');
+        }
+      }
+
+      function switchTab(tabId) {
+        currentActiveTab = tabId;
+        const salesSec = document.getElementById('salesSection');
+        const superSec = document.getElementById('supervisorSection');
+
+        if (tabId === 'salesSection') {
+          salesSec.classList.remove('hidden');
+          superSec.classList.add('hidden');
+          setupSalesForm();
+        } else {
+          superSec.classList.remove('hidden');
+          salesSec.classList.add('hidden');
+          loadSupervisorDashboard();
+        }
+      }
+
+      function setupSalesForm() {
+        document.getElementById('salesWelcomeName').innerText = `Halo, ${currentUser.nama}`;
+        document.getElementById('salesSpointLabel').innerText = currentUser.spoint;
+        
+        const currentMtd = currentUser.currentMtd || 0;
+        const target = currentUser.target || 0;
+        const totalCall = currentUser.totalCall || 0;
+        const totalEffCall = currentUser.totalEffCall || 0;
+        const totalSku = currentUser.totalSku || 0;
+        const workingDaysLeft = currentUser.workingDaysLeft || 1;
+        
+        // 1. Render Progress Bar Target
+        const achPercent = target > 0 ? Math.round((currentMtd / target) * 100) : 0;
+        document.getElementById('salesProgressPercent').innerText = `${achPercent}%`;
+        document.getElementById('salesProgressBar').style.width = `${Math.min(achPercent, 100)}%`;
+        document.getElementById('salesCurrentMtdLabel').innerText = `Realisasi: ${formatRupiah(currentMtd)}`;
+        document.getElementById('salesTargetLabel').innerText = `Target: ${formatRupiah(target)}`;
+        
+        // 2. Render Scorecard Kunjungan & Item
+        document.getElementById('salesPersonalCall').innerText = totalCall;
+        const achCallPct = totalCall > 0 ? Math.round((totalEffCall / totalCall) * 100) : 0;
+        document.getElementById('salesPersonalEff').innerText = `${achCallPct}%`;
+        const avgSku = totalEffCall > 0 ? Number((totalSku / totalEffCall).toFixed(1)) : 0;
+        document.getElementById('salesPersonalSku').innerText = avgSku.toFixed(1);
+        
+        // 3. Render Run-Rate Calculator
+        const kekurangan = target - currentMtd;
+        const runRate = kekurangan > 0 ? Math.round(kekurangan / workingDaysLeft) : 0;
+        
+        const runRateEl = document.getElementById('salesRunRateValue');
+        if (kekurangan <= 0) {
+          runRateEl.innerText = "Target Tercapai! 🎉";
+          runRateEl.className = "text-xl font-heading font-black text-green-600 mt-1";
+        } else {
+          runRateEl.innerText = formatRupiah(runRate);
+          runRateEl.className = "text-xl font-heading font-black text-indomarcoRed mt-1";
+        }
+        document.getElementById('salesWorkingDaysLeftLabel').innerText = `Sisa hari kerja bulan ini: ${workingDaysLeft} hari`;
+        
+        // 4. Render Automated Evaluation
+        let adviceText = "";
+        if (kekurangan <= 0) {
+          adviceText = "Luar biasa! Target penjualan bulan ini telah tercapai dengan sukses. Pertahankan hubungan baik dengan pelanggan dan terus pertahankan performa prima Anda!";
+        } else if (achCallPct < 70 && totalCall > 0) {
+          adviceText = `Rasio kunjungan efektif Anda masih rendah (${achCallPct}%). Evaluasi kembali teknik penawaran Anda di outlet untuk meningkatkan rasio Effective Call.`;
+        } else if (avgSku < 3.0 && totalCall > 0) {
+          adviceText = `Kepadatan SKU terjual per toko cukup rendah (${avgSku.toFixed(1)} item). Cobalah lakukan upselling atau penawaran variasi produk pendukung lainnya.`;
+        } else if (runRate > (target / 25)) {
+          adviceText = `Sisa target harian Anda cukup besar (${formatRupiah(runRate)}/hari). Segera maksimalkan kunjungan harian Anda dan fokus pada outlet potensial besar!`;
+        } else {
+          adviceText = "Kinerja harian Anda berjalan sangat baik. Pertahankan konsistensi kunjungan, jaga efektivitas conversion rate, dan pertahankan stabilitas performa.";
+        }
+        document.getElementById('salesPersonalAdvice').innerText = adviceText;
+        
+        document.getElementById('dailyForm').reset();
+        document.getElementById('formAlert').classList.add('hidden');
+      }
+
+      function executeLogout() {
+        currentUser = null;
+        try {
+          localStorage.removeItem('indomarco_session');
+        } catch (e) {}
+        document.getElementById('appContainer').classList.add('hidden');
+        document.getElementById('loginPage').classList.remove('hidden');
+        document.getElementById('loginForm').reset();
+        document.getElementById('errorMessage').classList.add('hidden');
+      }
+
+      async function submitFormSales(event) {
+        event.preventDefault();
+        
+        const alertDiv = document.getElementById('formAlert');
+        alertDiv.classList.add('hidden');
+        
+        const salesMtdInput = Number(document.getElementById('formSalesMtd').value);
+        
+        // Peringatan Frontend jika sales MTD bernilai lebih rendah dari sebelumnya (Blokir Input Total)
+        if (salesMtdInput < currentUser.currentMtd) {
+          const alertMsg = `Kesalahan Input MTD: Nilai MTD baru (Rp ${salesMtdInput.toLocaleString('id-ID')}) yang dimasukkan lebih kecil dari data yang tersimpan sebelumnya (Rp ${currentUser.currentMtd.toLocaleString('id-ID')}). Nilai Sales MTD berjalan bersifat kumulatif dan tidak diperbolehkan menurun.`;
+          await showCustomAlert("Kesalahan Input MTD", alertMsg);
+          return; // Hentikan pengiriman data ke server
+        }
+        
+        toggleOverlay(true);
+        
+        const salesData = {
+          dateType: document.getElementById('formDateType').value,
+          call: document.getElementById('formCall').value,
+          effCall: document.getElementById('formEffCall').value,
+          skuItem: document.getElementById('formSku').value,
+          salesMtd: salesMtdInput
+        };
+
+        try {
+          const res = await callApi("saveLog", { salesData: salesData });
+          toggleOverlay(false);
+          
+          if (res.success) {
+            alertDiv.className = "p-3.5 rounded-xl text-xs font-semibold mb-4 bg-green-50 text-green-700 border border-green-200";
+            alertDiv.innerText = res.message;
+            alertDiv.classList.remove('hidden');
+            
+            // Perbarui data local di memory & visual analytics
+            currentUser.currentMtd = salesMtdInput;
+            currentUser.totalCall = (currentUser.totalCall || 0) + Number(salesData.call);
+            currentUser.totalEffCall = (currentUser.totalEffCall || 0) + Number(salesData.effCall);
+            currentUser.totalSku = (currentUser.totalSku || 0) + Number(salesData.skuItem);
+            
+            setupSalesForm();
+          } else {
+            alertDiv.className = "p-3.5 rounded-xl text-xs font-semibold mb-4 bg-red-50 text-indomarcoRed border border-red-200";
+            alertDiv.innerText = res.message;
+            alertDiv.classList.remove('hidden');
+          }
+        } catch (err) {
+          toggleOverlay(false);
+          alertDiv.className = "p-3.5 rounded-xl text-xs font-semibold mb-4 bg-red-50 text-indomarcoRed border border-red-200";
+          alertDiv.innerText = "Komunikasi dengan server database GAS terputus.";
+          alertDiv.classList.remove('hidden');
+        }
+      }
+
+      async function loadSupervisorDashboard(selectedMonthIndex) {
+        const refreshIcon = document.getElementById('refreshIcon');
+        const tbody = document.getElementById('salesTableBody');
+        // Gunakan skeletal loader hanya untuk muatan pertama (saat tabel kosong)
+        const isFirst = !tbody || tbody.children.length === 0;
+        
+        if (isFirst) {
+          toggleOverlay(true);
+        } else if (refreshIcon) {
+          refreshIcon.classList.add('animate-spin');
+        }
+        
+        // Baca pilihan filter jika tidak dikirim sebagai parameter
+        let monthParam = selectedMonthIndex;
+        if (monthParam === undefined || monthParam === null) {
+          const filterBulanSelect = document.getElementById('filterBulan');
+          if (filterBulanSelect) {
+            monthParam = filterBulanSelect.value;
+          }
+        }
+        
+        try {
+          const res = await callApi("getPerformance", { selectedMonthIndex: monthParam });
+          toggleOverlay(false);
+          if (refreshIcon) {
+            refreshIcon.classList.remove('animate-spin');
+          }
+          
+          if (res.success) {
+            renderSupervisorData(res);
+          } else {
+            alert("Gagal memuat data: " + res.message);
+          }
+        } catch (err) {
+          toggleOverlay(false);
+          if (refreshIcon) {
+            refreshIcon.classList.remove('animate-spin');
+          }
+          alert("Gagal melakukan sinkronisasi dengan Google Apps Script.");
+        }
+      }
+
+      function changeFilterBulan() {
+        const select = document.getElementById('filterBulan');
+        loadSupervisorDashboard(select.value);
+      }
+
+      function renderSupervisorData(data) {
+        // Set info judul laporan cetak & badge cetak
+        const printMonthBadge = document.getElementById('printMonthBadge');
+        if (printMonthBadge) {
+          printMonthBadge.innerText = `Bulan: ${data.activeMonthName}`;
+        }
+        const printReportTitle = document.getElementById('printReportTitle');
+        if (printReportTitle) {
+          printReportTitle.innerText = `LAPORAN KINERJA - ${data.activeMonthName.toUpperCase()}`;
+        }
+        
+        // Isi dropdown filterBulan jika kosong atau baru pertama kali dimuat
+        const selectBulan = document.getElementById('filterBulan');
+        if (selectBulan && data.availableMonths) {
+          if (selectBulan.children.length === 0) {
+            selectBulan.innerHTML = "";
+            data.availableMonths.forEach(function(m) {
+              const opt = document.createElement('option');
+              opt.value = m.index;
+              opt.text = m.name;
+              if (m.index === data.activeMonthIndex) {
+                opt.selected = true;
+              }
+              selectBulan.appendChild(opt);
+            });
+          }
+        }
+        
+        // Render Card Summary
+        document.getElementById('sumTarget').innerText = formatRupiah(data.summary.totalTarget);
+        document.getElementById('sumSales').innerText = formatRupiah(data.summary.totalSales);
+        document.getElementById('sumAchPercent').innerText = `${data.summary.achSalesPct}%`;
+        document.getElementById('sumKekurangan').innerText = formatRupiah(data.summary.kekurangan);
+        
+        // Update visit total badge
+        document.getElementById('territoryTotalVisitBadge').innerText = 
+          `Total Call Wilayah: ${data.summary.totalCall} | Eff Call: ${data.summary.totalEffCall} (${data.summary.achCallPct}%)`;
+
+        // Reset input filter tanggal saat ganti bulan target
+        document.getElementById('filterStartDate').value = "";
+        document.getElementById('filterEndDate').value = "";
+
+        // Simpan data ke variabel global
+        supervisorRawLogs = data.rawLogs || [];
+        supervisorSalesList = data.salesList || [];
+
+        // Kalkulasi Matriks & Insights Tim (Selalu berbasis akumulasi bulanan penuh)
+        const activeSalesCount = data.salesList.length;
+        const avgCall = activeSalesCount > 0 ? (data.summary.totalCall / activeSalesCount) : 0;
+        supervisorAvgCall = avgCall;
+        
+        let topPerformer = null;
+        let needCoaching = null;
+        
+        if (activeSalesCount > 0) {
+          topPerformer = data.salesList[0]; // Diurutkan tertinggi ke terendah
+          needCoaching = data.salesList[activeSalesCount - 1];
+        }
+        
+        document.getElementById('spvTopPerformer').innerText = topPerformer ? `${topPerformer.nama} (${topPerformer.achSalesPct}%)` : '-';
+        document.getElementById('spvNeedCoaching').innerText = (needCoaching && needCoaching.achSalesPct < 90) ? `${needCoaching.nama} (${needCoaching.achSalesPct}%)` : 'Semua sales ≥ 90% 🎉';
+        document.getElementById('spvAvgCall').innerText = `${Math.round(avgCall)} Call / Sales`;
+
+        // Render Tabel Anggota Tim secara terpisah
+        renderSupervisorTableOnly(data.salesList);
+
+        // Ekstrak data untuk Chart bulanan
+        let namesForChart = [];
+        let salesForChart = [];
+        let targetsForChart = [];
+
+        data.salesList.forEach(function(salesman) {
+          namesForChart.push(salesman.nama);
+          salesForChart.push(salesman.salesMtd);
+          targetsForChart.push(salesman.target);
+        });
+
+        // Render Charts
+        renderCharts(namesForChart, salesForChart, targetsForChart, data.summary.achSalesPct, data.salesList, data.activeMonthName);
+      }
+
+      function renderSupervisorTableOnly(salesList) {
+        const tbody = document.getElementById('salesTableBody');
+        const mobileContainer = document.getElementById('salesMobileContainer');
+        
+        tbody.innerHTML = "";
+        mobileContainer.innerHTML = "";
+        
+        // Hitung ulang total kunjungan wilayah berdasarkan data list yang ditampilkan
+        let totalCallRange = 0;
+        let totalEffCallRange = 0;
+        
+        const hasDateFilter = document.getElementById('filterStartDate').value || document.getElementById('filterEndDate').value;
+        
+        salesList.forEach(function(salesman) {
+          totalCallRange += salesman.totalCall;
+          totalEffCallRange += salesman.totalEffCall;
+          
+          const isHighConv = salesman.achCallPct >= 70;
+          
+          let categoryLabel = "";
+          let categoryBadgeClass = "";
+          
+          // Klasifikasi dinamis jika filter tanggal aktif
+          if (hasDateFilter) {
+            if (isHighConv) {
+              categoryLabel = "Efektif";
+              categoryBadgeClass = "bg-green-100 text-green-800 border border-green-200";
+            } else {
+              categoryLabel = "Kurang Efektif";
+              categoryBadgeClass = "bg-red-100 text-red-800 border border-red-200";
+            }
+          } else {
+            // Klasifikasi kuadran cerdas berbasis target penjualan & efisiensi kunjungan
+            const isHighCall = salesman.totalCall >= (supervisorAvgCall * 0.8);
+            const isHighSales = salesman.achSalesPct >= 90;
+            
+            if (isHighSales) {
+              if (isHighConv) {
+                categoryLabel = "Star";
+                categoryBadgeClass = "bg-green-100 text-green-800 border border-green-200";
+              } else {
+                categoryLabel = "Potensial";
+                categoryBadgeClass = "bg-blue-100 text-blue-800 border border-blue-200";
+              }
+            } else {
+              // Jika target penjualan < 90%
+              if (isHighCall && isHighConv) {
+                categoryLabel = "Potensial"; // Aktivitas bagus, tinggal menunggu realisasi target
+                categoryBadgeClass = "bg-blue-100 text-blue-800 border border-blue-200";
+              } else if (isHighCall && !isHighConv) {
+                categoryLabel = "Kurang Efektif"; // Banyak kunjungan tapi konversi penjualan rendah
+                categoryBadgeClass = "bg-yellow-100 text-yellow-800 border border-yellow-200";
+              } else {
+                categoryLabel = "Kritis"; // Kunjungan rendah, konversi rendah, target jauh
+                categoryBadgeClass = "bg-red-100 text-red-800 border border-red-200";
+              }
+            }
+          }
+
+          const isWarning = salesman.achSalesPct < 90;
+          const bgClass = isWarning ? "bg-red-50/50 hover:bg-red-100/50" : "hover:bg-gray-50/50";
+          const progressBadge = salesman.achSalesPct >= 95 ? "bg-green-100 text-green-800" : (salesman.achSalesPct >= 90 ? "bg-indigo-100 text-indigo-800" : "bg-red-100 text-indomarcoRed");
+
+          // 1. Render Baris Tabel Desktop
+          const tr = document.createElement('tr');
+          tr.className = `${bgClass} transition-colors border-b border-gray-100`;
+          tr.innerHTML = `
+            <td class="px-3 py-3.5 font-semibold text-gray-700">${salesman.nama}</td>
+            <td class="px-3 py-3.5 text-gray-500">${salesman.spoint}</td>
+            <td class="px-3 py-3.5 text-right font-medium">${formatRupiah(salesman.target)}</td>
+            <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalCall}</td>
+            <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalEffCall}</td>
+            <td class="px-3 py-3.5 text-center font-bold">${salesman.achCallPct}%</td>
+            <td class="px-3 py-3.5 text-center font-bold text-gray-600">${salesman.totalSku}</td>
+            <td class="px-3 py-3.5 text-center font-semibold text-gray-600">${salesman.achItem}</td>
+            <td class="px-3 py-3.5 text-right font-bold text-gray-700">${formatRupiah(salesman.salesMtd)}</td>
+            <td class="px-3 py-3.5 text-center">
+              <span class="px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider ${progressBadge}">${salesman.achSalesPct}%</span>
+            </td>
+            <td class="px-3 py-3.5 text-center">
+              <span class="px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${categoryBadgeClass}">${categoryLabel}</span>
+            </td>
+            <td class="px-3 py-3.5 text-right font-bold text-indomarcoRed">${formatRupiah(salesman.kekurangan)}</td>
+          `;
+          tbody.appendChild(tr);
+
+          // 2. Render Card Mobile Accordion
+          const mobileCard = document.createElement('div');
+          mobileCard.className = `p-4 ${bgClass} transition-colors`;
+          mobileCard.innerHTML = `
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <h4 class="font-bold text-sm text-gray-800">${salesman.nama}</h4>
+                <p class="text-[10px] text-gray-400 uppercase tracking-wider">
+                  ${salesman.spoint} <span class="mx-1 text-gray-200">|</span> Call: ${salesman.totalCall} (EC: ${salesman.totalEffCall}) <span class="mx-1 text-gray-200">|</span> SKU: ${salesman.totalSku}
+                </p>
+              </div>
+              <div class="flex flex-col items-end space-y-1">
+                <span class="px-2 py-0.5 rounded text-[8px] font-extrabold tracking-wider ${progressBadge}">${salesman.achSalesPct}% ACH</span>
+                <span class="px-1.5 py-0.5 rounded text-[7px] font-bold tracking-wider ${categoryBadgeClass}">${categoryLabel}</span>
+              </div>
+            </div>
+            
+            <div class="w-full bg-gray-200 h-1.5 rounded-full overflow-hidden mb-3">
+              <div class="h-full ${isWarning ? 'bg-indomarcoRed' : 'bg-green-500'}" style="width: ${Math.min(salesman.achSalesPct, 100)}%"></div>
+            </div>
+
+            <details class="group">
+              <summary class="list-none flex justify-between items-center text-[10px] text-indomarcoBlue font-bold cursor-pointer select-none">
+                <span>LIHAT RINCIAN DATA</span>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              <div class="grid grid-cols-2 gap-2 mt-2 pt-2 border-t border-gray-100 text-[10px] text-gray-600 bg-white/40 p-2 rounded-xl">
+                <div><strong>Target:</strong> ${formatRupiah(salesman.target)}</div>
+                <div><strong>Sales MTD:</strong> ${formatRupiah(salesman.salesMtd)}</div>
+                <div><strong>Kunjungan (Call):</strong> ${salesman.totalCall}</div>
+                <div><strong>Effective Call:</strong> ${salesman.totalEffCall} (${salesman.achCallPct}%)</div>
+                <div><strong>Ach SKU Item:</strong> ${salesman.achItem}</div>
+                <div class="text-indomarcoRed"><strong>Sisa Target:</strong> ${formatRupiah(salesman.kekurangan)}</div>
+              </div>
+            </details>
+          `;
+          mobileContainer.appendChild(mobileCard);
+        });
+        
+        // Update visit total badge untuk rentang yang disaring
+        const rangeEffPct = totalCallRange > 0 ? Math.round((totalEffCallRange / totalCallRange) * 100) : 0;
+        document.getElementById('territoryTotalVisitBadge').innerText = 
+          `Total Call Wilayah: ${totalCallRange} | Eff Call: ${totalEffCallRange} (${rangeEffPct}%)`;
+      }
+
+      function applyDateRangeFilter() {
+        const startVal = document.getElementById('filterStartDate').value;
+        const endVal = document.getElementById('filterEndDate').value;
+        
+        if (!startVal && !endVal) {
+          renderSupervisorTableOnly(supervisorSalesList);
+          return;
+        }
+        
+        const startDate = startVal ? new Date(startVal + "T00:00:00") : null;
+        const endDate = endVal ? new Date(endVal + "T23:59:59") : null;
+        
+        const filteredList = supervisorSalesList.map(salesman => {
+          const logsInRange = supervisorRawLogs.filter(log => {
+            if (log.nama !== salesman.nama) return false;
+            const logDate = new Date(log.timestamp);
+            if (startDate && logDate < startDate) return false;
+            if (endDate && logDate > endDate) return false;
+            return true;
+          });
+          
+          let rangeCall = 0;
+          let rangeEffCall = 0;
+          let rangeSku = 0;
+          
+          logsInRange.forEach(log => {
+            rangeCall += log.call;
+            rangeEffCall += log.effCall;
+            rangeSku += log.sku;
+          });
+          
+          let endMtd = 0;
+          let startMtd = 0;
+          
+          if (logsInRange.length > 0) {
+            const sortedLogs = [...logsInRange].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+            endMtd = sortedLogs[sortedLogs.length - 1].salesMtd;
+          } else {
+            const logsBeforeEnd = supervisorRawLogs.filter(log => {
+              if (log.nama !== salesman.nama) return false;
+              const logDate = new Date(log.timestamp);
+              if (endDate && logDate > endDate) return false;
+              return true;
+            });
+            if (logsBeforeEnd.length > 0) {
+              const sorted = [...logsBeforeEnd].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+              endMtd = sorted[sorted.length - 1].salesMtd;
+            }
+          }
+          
+          if (startDate) {
+            const logsBeforeStart = supervisorRawLogs.filter(log => {
+              if (log.nama !== salesman.nama) return false;
+              const logDate = new Date(log.timestamp);
+              if (logDate >= startDate) return false;
+              return true;
+            });
+            if (logsBeforeStart.length > 0) {
+              const sorted = [...logsBeforeStart].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+              startMtd = sorted[sorted.length - 1].salesMtd;
+            }
+          }
+          
+          let rangeSales = endMtd - startMtd;
+          if (rangeSales < 0) rangeSales = 0;
+          
+          const rangeAchCallPct = rangeCall > 0 ? Math.round((rangeEffCall / rangeCall) * 100) : 0;
+          const rangeAchSalesPct = salesman.target > 0 ? Math.round((rangeSales / salesman.target) * 100) : 0;
+          const rangeAchItem = rangeEffCall > 0 ? Number((rangeSku / rangeEffCall).toFixed(1)) : 0;
+          let rangeKekurangan = salesman.target - rangeSales;
+          if (rangeKekurangan < 0) rangeKekurangan = 0;
+          
+          return {
+            nama: salesman.nama,
+            spoint: salesman.spoint,
+            target: salesman.target,
+            totalCall: rangeCall,
+            totalEffCall: rangeEffCall,
+            totalSku: rangeSku,
+            achCallPct: rangeAchCallPct,
+            achItem: rangeAchItem,
+            salesMtd: rangeSales,
+            achSalesPct: rangeAchSalesPct,
+            kekurangan: rangeKekurangan
+          };
+        });
+        
+        filteredList.sort((a, b) => b.achSalesPct - a.achSalesPct);
+        renderSupervisorTableOnly(filteredList);
+      }
+      
+      function resetDateRangeFilter() {
+        document.getElementById('filterStartDate').value = "";
+        document.getElementById('filterEndDate').value = "";
+        applyDateRangeFilter();
+      }
+
+      function renderCharts(labels, sales, targets, territoryAch, salesList, activeMonthName) {
+        // 1. Gauge Chart (Radial) for Territory Target Achievement
+        const ctxGauge = document.getElementById('territoryGaugeChart').getContext('2d');
+        
+        if (chartGauge) {
+          chartGauge.destroy();
+        }
+
+        document.getElementById('radialPercentLabel').innerText = `${territoryAch}%`;
+        
+        chartGauge = new Chart(ctxGauge, {
+          type: 'doughnut',
+          data: {
+            datasets: [{
+              data: [territoryAch, Math.max(0, 100 - territoryAch)],
+              backgroundColor: ['#0000B3', '#e5e7eb'],
+              borderWidth: 0,
+              cutout: '80%'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            }
+          }
+        });
+
+        // 2. Bar Chart Comparison (Horizontal)
+        const ctxBar = document.getElementById('barChartComparison').getContext('2d');
+        
+        if (chartBar) {
+          chartBar.destroy();
+        }
+
+        chartBar = new Chart(ctxBar, {
+          type: 'bar',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Realisasi MTD',
+                data: sales,
+                backgroundColor: '#0000B3',
+                borderRadius: 6,
+                barThickness: 8,
+              },
+              {
+                label: `Target ${activeMonthName || 'Bulan Ini'}`,
+                data: targets,
+                backgroundColor: '#E6005C',
+                borderRadius: 6,
+                barThickness: 8,
+              }
+            ]
+          },
+          options: {
+            indexAxis: 'y', // Membuat bar chart menjadi horizontal
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { boxWidth: 8, font: { size: 9 } }
+              }
+            },
+            scales: {
+              x: {
+                ticks: {
+                  font: { size: 8 },
+                  callback: function(val) {
+                    return `Rp ${Math.round(val/1e6)}jt`; // Singkat nominal ke Juta Rupiah
+                  }
+                },
+                grid: { display: false }
+              },
+              y: {
+                ticks: { font: { size: 8 } },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+
+        // 3. Activity Leaderboard Chart (Horizontal Bar Chart)
+        const ctxActivity = document.getElementById('activityLeaderboardChart').getContext('2d');
+        
+        if (chartActivity) {
+          chartActivity.destroy();
+        }
+
+        // Urutkan sales berdasarkan efektivitas kunjungan (achCallPct)
+        let sortedByActivity = [...salesList].sort((a, b) => b.achCallPct - a.achCallPct);
+        let activityLabels = sortedByActivity.map(s => s.nama);
+        let activityValues = sortedByActivity.map(s => s.achCallPct);
+
+        chartActivity = new Chart(ctxActivity, {
+          type: 'bar',
+          data: {
+            labels: activityLabels,
+            datasets: [{
+              label: 'Efektivitas Kunjungan (Ach Call %)',
+              data: activityValues,
+              backgroundColor: '#E6005C', // Indomarco Red/Magenta
+              borderRadius: 6,
+              barThickness: 8,
+            }]
+          },
+          options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              x: {
+                min: 0,
+                max: 100,
+                ticks: {
+                  font: { size: 8 },
+                  callback: function(val) { return val + '%'; }
+                },
+                grid: { display: false }
+              },
+              y: {
+                ticks: { font: { size: 8 } },
+                grid: { display: false }
+              }
+            }
+          }
+        });
+      }
+
+      function formatRupiah(val) {
+        return "Rp " + Number(val).toLocaleString('id-ID');
+      }
+
+      function triggerPdfExport() {
+        const printDateBadge = document.getElementById('printDateBadge');
+        if (printDateBadge) {
+          const now = new Date();
+          const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+          printDateBadge.innerText = `Dicetak: ${now.toLocaleDateString('id-ID', options)} WIB`;
+        }
+        window.print();
+      }
+    </script>
+  </body>
+</html>
