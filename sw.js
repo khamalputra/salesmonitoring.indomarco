@@ -1,4 +1,4 @@
-const CACHE_NAME = 'indomarco-sales-v3'; // Naikkan versi cache
+const CACHE_NAME = 'indomarco-sales-v4'; // Naikkan versi cache
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
