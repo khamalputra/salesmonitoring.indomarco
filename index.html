@@ -697,12 +697,35 @@
       let supervisorSalesList = [];
       let supervisorAvgCall = 0;
 
-      // PWA Service Worker Registration
+      // PWA Service Worker Registration & Auto-Update
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered successfully!', reg))
+            .then(reg => {
+              console.log('Service Worker registered successfully!', reg);
+              
+              // Jika ada worker baru terinstal, kita tunggu dia aktif lalu reload otomatis
+              reg.addEventListener('updatefound', () => {
+                const newWorker = reg.installing;
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('Update baru terdeteksi. Memuat ulang halaman...');
+                    }
+                  });
+                }
+              });
+            })
             .catch(err => console.log('Service Worker registration failed: ', err));
+        });
+
+        // Deteksi perubahan controller untuk melakukan reload otomatis ketika SW baru aktif
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
         });
       }
 

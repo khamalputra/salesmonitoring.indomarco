@@ -30,26 +30,56 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Hanya tangani request GET untuk cache shell statis
   if (event.request.method !== 'GET') return;
   
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(event.request).then((networkResponse) => {
-        // Caching aset eksternal seperti library JS CDN dan Google Fonts
-        if (event.request.url.startsWith('http') && !event.request.url.includes('google.script.run') && !event.request.url.includes('/macros/s/')) {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, networkResponse.clone());
-            return networkResponse;
-          });
+  // Abaikan request API Google Apps Script
+  if (event.request.url.includes('google.script.run') || event.request.url.includes('/macros/s/')) {
+    return;
+  }
+
+  const url = new URL(event.request.url);
+  const isCoreAsset = url.pathname.endsWith('/') || 
+                      url.pathname.endsWith('index.html') || 
+                      url.pathname.endsWith('manifest.json') ||
+                      url.pathname.endsWith('sw.js');
+
+  if (isCoreAsset) {
+    // Strategi: Network-First (dengan Cache Fallback) untuk core HTML agar selalu update saat online
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse.status === 200) {
+            const responseCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseCopy);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline fallback dari cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // Strategi: Cache-First (dengan Network Fallback) untuk aset statis pendukung (CSS, JS, Ikon)
+    event.respondWith(
+      caches.match(event.request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
         }
-        return networkResponse;
-      }).catch(() => {
-        // Fallback offline (jika gagal jaringan)
-      });
-    })
-  );
+        return fetch(event.request).then((networkResponse) => {
+          if (networkResponse.status === 200 && event.request.url.startsWith('http')) {
+            const responseCopy = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseCopy);
+            });
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Gagal offline
+        });
+      })
+    );
+  }
 });
