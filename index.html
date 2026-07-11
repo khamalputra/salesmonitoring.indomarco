@@ -311,7 +311,12 @@
                     <p class="text-xs text-white/70 font-semibold uppercase tracking-wider" id="salesSpointLabel"></p>
                     <h2 class="text-2xl font-heading font-black mt-0.5" id="salesWelcomeName">Halo, Salesman</h2>
                   </div>
-                  <span class="text-[9px] bg-green-400 text-slate-900 px-2 py-1 rounded-md font-bold uppercase tracking-wide">AKTIF</span>
+                  <div class="flex flex-col items-end gap-1.5">
+                    <span class="text-[9px] bg-green-400 text-slate-900 px-2 py-1 rounded-md font-bold uppercase tracking-wide">AKTIF</span>
+                    <select id="salesFilterBulan" onchange="changeSalesFilterBulan()" class="text-[10px] bg-white/20 text-white border border-white/20 px-2 py-1 rounded-lg font-bold tracking-wide focus:outline-none focus:ring-1 focus:ring-green-400 transition-all cursor-pointer">
+                      <!-- Opsi diisi secara dinamis -->
+                    </select>
+                  </div>
                 </div>
                 
                 <!-- Target Progress Bar -->
@@ -390,39 +395,45 @@
                   </span>
                 </div>
 
-                <div id="formAlert" class="hidden p-3.5 rounded-xl text-xs font-semibold mb-4 transition-all"></div>
+                <div id="salesPastMonthNotice" class="hidden bg-amber-50 border border-amber-200/80 p-5 rounded-2xl text-xs text-amber-800 font-semibold text-center leading-relaxed">
+                  ⚠️ Form pelaporan dinonaktifkan karena Anda sedang melihat data historis bulan <span id="salesPastMonthName" class="font-bold"></span>.
+                </div>
+                
+                <div id="salesFormArea">
+                  <div id="formAlert" class="hidden p-3.5 rounded-xl text-xs font-semibold mb-4 transition-all"></div>
 
-                <form id="dailyForm" onsubmit="submitFormSales(event)" class="space-y-4">
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Tanggal Laporan</label>
-                    <select id="formDateType" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all bg-white font-semibold">
-                      <option value="today">Hari Ini (H)</option>
-                      <option value="yesterday">Kemarin (H-1)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Total Call Hari Ini (Kunjungan)</label>
-                    <input type="number" id="formCall" required min="1" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 35">
-                  </div>
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Effective Call Hari Ini</label>
-                    <input type="number" id="formEffCall" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 20">
-                  </div>
-                  <div>
-                    <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">SKU Item Terjual Hari Ini</label>
-                    <input type="number" id="formSku" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 150">
-                  </div>
-                  
-                  <div class="bg-pink-50/50 border border-pink-100/80 p-4 rounded-2xl">
-                    <label class="block text-xs font-bold text-indomarcoRed mb-1">Nilai Sales MTD Terbaru (Rupiah)</label>
-                    <p class="text-[9px] text-gray-500 mb-2 leading-relaxed">⚠️ Masukkan total akumulasi MTD berjalan Anda sampai dengan hari ini dari laporan email resmi.</p>
-                    <input type="number" id="formSalesMtd" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-pink-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all font-semibold bg-white" placeholder="Contoh: 820000000">
-                  </div>
-                  
-                  <button type="submit" class="w-full bg-indomarcoRed hover:bg-indomarcoRedDark text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all uppercase tracking-wider text-xs font-heading">
-                    Kirim Laporan MTD
-                  </button>
-                </form>
+                  <form id="dailyForm" onsubmit="submitFormSales(event)" class="space-y-4">
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Tanggal Laporan</label>
+                      <select id="formDateType" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all bg-white font-semibold">
+                        <option value="today">Hari Ini (H)</option>
+                        <option value="yesterday">Kemarin (H-1)</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Total Call Hari Ini (Kunjungan)</label>
+                      <input type="number" id="formCall" required min="1" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 35">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">Effective Call Hari Ini</label>
+                      <input type="number" id="formEffCall" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 20">
+                    </div>
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1.5 tracking-wider">SKU Item Terjual Hari Ini</label>
+                      <input type="number" id="formSku" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all" placeholder="Contoh: 150">
+                    </div>
+                    
+                    <div class="bg-pink-50/50 border border-pink-100/80 p-4 rounded-2xl">
+                      <label class="block text-xs font-bold text-indomarcoRed mb-1">Nilai Sales MTD Terbaru (Rupiah)</label>
+                      <p class="text-[9px] text-gray-500 mb-2 leading-relaxed">⚠️ Masukkan total akumulasi MTD berjalan Anda sampai dengan hari ini dari laporan email resmi.</p>
+                      <input type="number" id="formSalesMtd" required min="0" inputmode="numeric" pattern="[0-9]*" class="w-full border border-pink-200 rounded-xl px-3 py-2.5 focus:outline-none focus:ring-2 focus:ring-indomarcoBlue text-sm transition-all font-semibold bg-white" placeholder="Contoh: 820000000">
+                    </div>
+                    
+                    <button type="submit" class="w-full bg-indomarcoRed hover:bg-indomarcoRedDark text-white font-bold py-3.5 px-4 rounded-xl shadow-md hover:shadow-lg transition-all uppercase tracking-wider text-xs font-heading">
+                      Kirim Laporan MTD
+                    </button>
+                  </form>
+                </div>
               </div>
             </div>
           </div>
@@ -730,7 +741,7 @@
       async function refreshSalesDataSilent() {
         if (!currentUser) return;
         try {
-          const res = await callApi("login");
+          const res = await callApi("login", { selectedMonthIndex: currentUser.activeMonthIndex });
           if (res.success) {
             currentUser.currentMtd = res.currentMtd || 0;
             currentUser.target = res.target || 0;
@@ -738,6 +749,9 @@
             currentUser.totalEffCall = res.totalEffCall || 0;
             currentUser.totalSku = res.totalSku || 0;
             currentUser.workingDaysLeft = res.workingDaysLeft || 1;
+            currentUser.availableMonths = res.availableMonths || [];
+            currentUser.activeMonthIndex = res.activeMonthIndex;
+            currentUser.activeMonthName = res.activeMonthName;
             
             localStorage.setItem('indomarco_session', JSON.stringify(currentUser));
             
@@ -875,7 +889,10 @@
               totalCall: res.totalCall || 0,
               totalEffCall: res.totalEffCall || 0,
               totalSku: res.totalSku || 0,
-              workingDaysLeft: res.workingDaysLeft || 1
+              workingDaysLeft: res.workingDaysLeft || 1,
+              availableMonths: res.availableMonths || [],
+              activeMonthIndex: res.activeMonthIndex,
+              activeMonthName: res.activeMonthName
             };
             
             try {
@@ -942,6 +959,42 @@
         const totalSku = currentUser.totalSku || 0;
         const workingDaysLeft = currentUser.workingDaysLeft || 1;
         
+        // Render dropdown filter bulan jika tersedia
+        const selectBulan = document.getElementById('salesFilterBulan');
+        if (selectBulan && currentUser.availableMonths) {
+          selectBulan.innerHTML = "";
+          currentUser.availableMonths.forEach(function(m) {
+            const opt = document.createElement('option');
+            opt.value = m.index;
+            opt.innerText = m.name;
+            opt.className = "text-slate-800";
+            if (m.index === currentUser.activeMonthIndex) {
+              opt.selected = true;
+            }
+            selectBulan.appendChild(opt);
+          });
+        }
+        
+        // Proteksi form pelaporan: Kunci form jika melihat data historis
+        const calendarDate = new Date();
+        const activeMonthIndex = (currentUser.activeMonthIndex !== undefined) ? currentUser.activeMonthIndex : calendarDate.getMonth();
+        const isCurrentMonth = activeMonthIndex === calendarDate.getMonth();
+        
+        const pastNotice = document.getElementById('salesPastMonthNotice');
+        const formArea = document.getElementById('salesFormArea');
+        const pastNameSpan = document.getElementById('salesPastMonthName');
+        
+        if (isCurrentMonth) {
+          pastNotice.classList.add('hidden');
+          formArea.classList.remove('hidden');
+        } else {
+          pastNotice.classList.remove('hidden');
+          formArea.classList.add('hidden');
+          if (pastNameSpan) {
+            pastNameSpan.innerText = currentUser.activeMonthName || "Historis";
+          }
+        }
+        
         // 1. Render Progress Bar Target
         const achPercent = target > 0 ? Math.round((currentMtd / target) * 100) : 0;
         document.getElementById('salesProgressPercent').innerText = `${achPercent}%`;
@@ -962,7 +1015,7 @@
         
         const runRateEl = document.getElementById('salesRunRateValue');
         if (kekurangan <= 0) {
-          runRateEl.innerText = "Target Tercapai! 🎉";
+          runRateEl.innerText = "Target/Misi Selesai! 🎉";
           runRateEl.className = "text-xl font-heading font-black text-green-600 mt-1";
         } else {
           runRateEl.innerText = formatRupiah(runRate);
@@ -987,6 +1040,43 @@
         
         document.getElementById('dailyForm').reset();
         document.getElementById('formAlert').classList.add('hidden');
+      }
+
+      async function changeSalesFilterBulan() {
+        const selectBulan = document.getElementById('salesFilterBulan');
+        const selectedMonth = selectBulan.value;
+        
+        toggleOverlay(true);
+        try {
+          const res = await callApi("login", {
+            username: currentUser.username,
+            password: currentUser.password,
+            selectedMonthIndex: selectedMonth
+          });
+          
+          toggleOverlay(false);
+          if (res && res.success) {
+            // Perbarui data user aktif dengan respons bulan terpilih
+            currentUser.currentMtd = res.currentMtd;
+            currentUser.target = res.target;
+            currentUser.totalCall = res.totalCall;
+            currentUser.totalEffCall = res.totalEffCall;
+            currentUser.totalSku = res.totalSku;
+            currentUser.workingDaysLeft = res.workingDaysLeft;
+            currentUser.activeMonthIndex = res.activeMonthIndex;
+            currentUser.activeMonthName = res.activeMonthName;
+            
+            // Simpan ke localStorage agar awet jika reload
+            localStorage.setItem('indomarco_session', JSON.stringify(currentUser));
+            
+            setupSalesForm();
+          } else {
+            showCustomAlert("Gagal Memuat Data", res.message || "Terjadi kesalahan saat mengambil data.");
+          }
+        } catch (e) {
+          toggleOverlay(false);
+          showCustomAlert("Koneksi Error", "Gagal menghubungi server Apps Script.");
+        }
       }
 
       function executeLogout() {

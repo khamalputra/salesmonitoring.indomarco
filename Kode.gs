@@ -84,7 +84,7 @@ function doPost(e) {
     var result = { success: false, message: "Aksi tidak dikenali." };
     
     if (action === "login") {
-      result = checkLogin(params.username, params.password);
+      result = checkLogin(params.username, params.password, params.selectedMonthIndex);
     } else if (action === "getPerformance") {
       result = getPerformanceData(params.username, params.password, params.selectedMonthIndex);
     } else if (action === "saveLog") {
@@ -127,7 +127,7 @@ function validateCredentials(username, password) {
 /**
  * Validasi login user.
  */
-function checkLogin(username, password) {
+function checkLogin(username, password, selectedMonthIndex) {
   var creds = validateCredentials(username, password);
   if (creds.valid) {
     var currentMtd = 0;
@@ -135,16 +135,22 @@ function checkLogin(username, password) {
     var totalCall = 0;
     var totalEffCall = 0;
     var totalSku = 0;
-    var workingDaysLeft = getWorkingDaysLeft();
     
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var currentDate = new Date();
-    var targetColInfo = getActiveTargetColumn(creds.headers, currentDate);
+    var filterDate = currentDate;
+    
+    if (selectedMonthIndex !== undefined && selectedMonthIndex !== null && selectedMonthIndex !== "") {
+      filterDate = new Date(currentDate.getFullYear(), Number(selectedMonthIndex), 1);
+    }
+    
+    var workingDaysLeft = getWorkingDaysLeftForFilter(currentDate.getFullYear(), filterDate.getMonth());
+    var targetColInfo = getActiveTargetColumn(creds.headers, filterDate);
     
     if (targetColInfo) {
-      target = Number(creds.rowData[targetColInfo.index]);
+      target = safeParseNumber(creds.rowData[targetColInfo.index]);
       var filterMonthIndex = targetColInfo.monthIndex;
-      var currentYear = currentDate.getFullYear();
+      var currentYear = filterDate.getFullYear();
       
       if (creds.role === "sales") {
         try {
@@ -190,6 +196,30 @@ function checkLogin(username, password) {
       }
     }
     
+    // Dapatkan daftar bulan target yang tersedia dari header
+    var availableMonths = [];
+    var monthNamesMap = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    var headers = creds.headers;
+    for (var h = 0; h < headers.length; h++) {
+      var headerStr = headers[h].toString().trim();
+      if (headerStr.toLowerCase().indexOf("target_") === 0) {
+        var cleanMonthName = headerStr.replace(/target_/i, "");
+        var foundIndex = -1;
+        for (var m = 0; m < monthNamesMap.length; m++) {
+          if (monthNamesMap[m].toLowerCase() === cleanMonthName.toLowerCase()) {
+            foundIndex = m;
+            break;
+          }
+        }
+        if (foundIndex !== -1) {
+          availableMonths.push({
+            name: monthNamesMap[foundIndex],
+            index: foundIndex
+          });
+        }
+      }
+    }
+    
     return {
       success: true,
       username: creds.username,
@@ -201,7 +231,10 @@ function checkLogin(username, password) {
       totalCall: totalCall,
       totalEffCall: totalEffCall,
       totalSku: totalSku,
-      workingDaysLeft: workingDaysLeft
+      workingDaysLeft: workingDaysLeft,
+      availableMonths: availableMonths,
+      activeMonthIndex: targetColInfo ? targetColInfo.monthIndex : currentDate.getMonth(),
+      activeMonthName: targetColInfo ? targetColInfo.name.replace("Target_", "") : monthNamesMap[currentDate.getMonth()]
     };
   } else {
     return { success: false, message: "Username atau password salah!" };
